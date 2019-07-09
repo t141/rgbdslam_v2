@@ -801,10 +801,10 @@ float getMinDepthInNeighborhood(const cv::Mat& depth, cv::Point2f center, float 
 #define SQRT_2 1.41421
 #define LOG_SQRT_2_PI = 0.9189385332
 
-inline int round(float d)
-{
-  return static_cast<int>(floor(d + 0.5));
-}
+// inline int round(float d)
+// {
+//   return static_cast<int>(floor(d + 0.5));
+// }
 // Returns the probability of [-inf,x] of a gaussian distribution
 double cdf(double x, double mu, double sigma)
 {

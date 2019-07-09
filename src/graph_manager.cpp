@@ -135,49 +135,49 @@ void GraphManager::createOptimizer(std::string backend, g2o::SparseOptimizer* op
 
   ParameterServer* ps = ParameterServer::instance();
   if(ps->get<bool>("optimize_landmarks")){
-     g2o::BlockSolverX::LinearSolverType *linearSolver = new g2o::LinearSolverCSparse<g2o::BlockSolverX::PoseMatrixType>(); // alternative: CHOLMOD
-     g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+    std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver = std::unique_ptr<g2o::BlockSolverX::LinearSolverType>(new g2o::LinearSolverCSparse<g2o::BlockSolverX::PoseMatrixType>()); // alternative: CHOLMOD
+    std::unique_ptr<g2o::BlockSolverX> solver_ptr = std::unique_ptr<g2o::BlockSolverX>(new g2o::BlockSolverX(std::move(linearSolver)));
      //optimizer_->setSolver(solver_ptr);
-    g2o::OptimizationAlgorithmDogleg * algo = new g2o::OptimizationAlgorithmDogleg(solver_ptr);
-    optimizer_->setAlgorithm(algo);
+    std::unique_ptr<g2o::OptimizationAlgorithmDogleg> algo = std::unique_ptr<g2o::OptimizationAlgorithmDogleg>(new g2o::OptimizationAlgorithmDogleg(std::move(solver_ptr)));
+    optimizer_->setAlgorithm(algo.get());
   }
   else
   {
-    SlamBlockSolver* solver = NULL;
+    std::unique_ptr<SlamBlockSolver> solver;
     if(backend == "cholmod" || backend == "auto"){
-      SlamLinearCholmodSolver* linearSolver = new SlamLinearCholmodSolver();
+      std::unique_ptr<SlamLinearCholmodSolver> linearSolver = std::unique_ptr<SlamLinearCholmodSolver>(new SlamLinearCholmodSolver());
       linearSolver->setBlockOrdering(false);
-      solver = new SlamBlockSolver(linearSolver);
+      solver = std::unique_ptr<SlamBlockSolver>(new SlamBlockSolver(std::move(linearSolver)));
       current_backend_ = "cholmod";
     }
     else if(backend == "csparse"){
-      SlamLinearCSparseSolver* linearSolver = new SlamLinearCSparseSolver();
+      std::unique_ptr<SlamLinearCSparseSolver> linearSolver = std::unique_ptr<SlamLinearCSparseSolver>(new SlamLinearCSparseSolver());
       linearSolver->setBlockOrdering(false);
-      solver = new SlamBlockSolver(linearSolver);
+      solver = std::unique_ptr<SlamBlockSolver>(new SlamBlockSolver(std::move(linearSolver)));
       current_backend_ = "csparse";
     }
     else if(backend == "dense"){
-      SlamLinearDenseSolver* linearSolver = new SlamLinearDenseSolver();
-      solver = new SlamBlockSolver(linearSolver);
+      std::unique_ptr<SlamLinearDenseSolver> linearSolver = std::unique_ptr<SlamLinearDenseSolver>(new SlamLinearDenseSolver());
+      solver = std::unique_ptr<SlamBlockSolver>(new SlamBlockSolver(std::move(linearSolver)));
       current_backend_ = "dense";
     }
     else if(backend == "pcg"){
-      SlamLinearPCGSolver* linearSolver = new SlamLinearPCGSolver();
-      solver = new SlamBlockSolver(linearSolver);
+      std::unique_ptr<SlamLinearPCGSolver> linearSolver = std::unique_ptr<SlamLinearPCGSolver>(new SlamLinearPCGSolver());
+      solver = std::unique_ptr<SlamBlockSolver>(new SlamBlockSolver(std::move(linearSolver)));
       current_backend_ = "pcg";
     }
     else {
       ROS_ERROR("Bad Parameter for g2o Solver backend: %s. User cholmod, csparse or pcg", backend.c_str());
       ROS_INFO("Falling Back to Cholmod Solver");
-      SlamLinearCholmodSolver* linearSolver = new SlamLinearCholmodSolver();
+      std::unique_ptr<SlamLinearCholmodSolver> linearSolver = std::unique_ptr<SlamLinearCholmodSolver>(new SlamLinearCholmodSolver());
       linearSolver->setBlockOrdering(false);
-      solver = new SlamBlockSolver(linearSolver);
+      solver = std::unique_ptr<SlamBlockSolver>(new SlamBlockSolver(std::move(linearSolver)));
       current_backend_ = "cholmod";
     }
     //optimizer_->setSolver(solver);
-    g2o::OptimizationAlgorithmLevenberg * algo = new g2o::OptimizationAlgorithmLevenberg(solver);
+    std::unique_ptr<g2o::OptimizationAlgorithmLevenberg> algo = std::unique_ptr<g2o::OptimizationAlgorithmLevenberg>(new g2o::OptimizationAlgorithmLevenberg(std::move(solver)));
     //g2o::OptimizationAlgorithmDogleg * algo = new g2o::OptimizationAlgorithmDogleg(solver);
-    optimizer_->setAlgorithm(algo);
+    optimizer_->setAlgorithm(algo.get());
   }
 
 

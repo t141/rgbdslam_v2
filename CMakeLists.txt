@@ -3,7 +3,7 @@ cmake_policy(SET CMP0003 NEW)
 #########################################################
 ### USER CONFIG #########################################
 #########################################################
-set(USE_SIFT_GPU  1 CACHE BOOL "build with support for siftgpu") 
+set(USE_SIFT_GPU  0 CACHE BOOL "build with support for siftgpu") 
 if (${USE_SIFT_GPU})
   message(STATUS "SiftGPU library will be used")
 else (${USE_SIFT_GPU})

@@ -40,15 +40,15 @@ void optimizerSetup(g2o::SparseOptimizer& optimizer){
   optimizer.setVerbose(false);
 
   // variable-size block solver
-  g2o::BlockSolverX::LinearSolverType * linearSolver
-      = new g2o::LinearSolverCholmod<g2o ::BlockSolverX::PoseMatrixType>();
+  std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver
+    = std::unique_ptr<g2o::BlockSolverX::LinearSolverType>(new g2o::LinearSolverCholmod<g2o::BlockSolverX::PoseMatrixType>());
 
 
-  g2o::BlockSolverX * solver_ptr
-      = new g2o::BlockSolverX(linearSolver);
+  std::unique_ptr<g2o::BlockSolverX> solver_ptr
+    = std::unique_ptr<g2o::BlockSolverX>(new g2o::BlockSolverX(std::move(linearSolver)));
 
-  g2o::OptimizationAlgorithmGaussNewton* solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
-  optimizer.setAlgorithm(solver);
+  std::unique_ptr<g2o::OptimizationAlgorithmGaussNewton> solver = std::unique_ptr<g2o::OptimizationAlgorithmGaussNewton>(new g2o::OptimizationAlgorithmGaussNewton(std::move(solver_ptr)));
+  optimizer.setAlgorithm(solver.get());
   //optimizer.setSolver(solver_ptr);
 
   g2o::ParameterCamera* cameraParams = new g2o::ParameterCamera();
